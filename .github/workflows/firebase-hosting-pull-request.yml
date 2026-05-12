@@ -15,6 +15,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Verify Firebase service account secret
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUDENTATTENDANCE_BNR2026 }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "Missing GitHub Actions secret: FIREBASE_SERVICE_ACCOUNT_STUDENTATTENDANCE_BNR2026"
+            echo "Add it in GitHub repo Settings > Secrets and variables > Actions > Repository secrets."
+            exit 1
+          fi
+
       - name: Deploy preview channel
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
