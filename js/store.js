@@ -71,6 +71,22 @@
         return () => ref.off();
     }
 
+    async function getStudentsOnce(classId) {
+        if (!classId) return {};
+        const snapshot = await db.ref(paths.students(classId)).once("value");
+        return normalizeSnapshot(snapshot);
+    }
+
+    async function getAttendanceRange(classId, dateKeys) {
+        if (!classId || dateKeys.length === 0) return {};
+        const snapshot = await db.ref(`${ROOT}/classes/${classId}/attendance`).once("value");
+        const allAttendance = normalizeSnapshot(snapshot);
+        return dateKeys.reduce((rangeData, key) => {
+            rangeData[key] = allAttendance[key] || {};
+            return rangeData;
+        }, {});
+    }
+
     async function addStudent(classId, name) {
         const trimmed = name.trim();
         if (!classId) throw new Error("กรุณาเลือกห้องเรียน");
@@ -114,6 +130,8 @@
         addClass,
         addStudent,
         archiveStudent,
+        getAttendanceRange,
+        getStudentsOnce,
         getUserProfile,
         markAllPresent,
         setAttendance,

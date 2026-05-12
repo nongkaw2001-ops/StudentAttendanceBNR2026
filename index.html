@@ -108,11 +108,36 @@
 
             <section class="section" id="historySection">
                 <div class="card">
-                    <h2>ประวัติย้อนหลัง</h2>
-                    <form class="inline-form" id="historyForm">
-                        <input id="historyDate" type="date">
-                        <button class="button button-primary" type="submit">ดูประวัติ</button>
+                    <h2>วิเคราะห์การเช็คชื่อ</h2>
+                    <form class="analytics-controls" id="historyForm">
+                        <label class="field compact">
+                            <span>ช่วงเวลา</span>
+                            <select id="historyPreset">
+                                <option value="this-month">เดือนนี้</option>
+                                <option value="last-7">7 วันล่าสุด</option>
+                                <option value="last-30">30 วันล่าสุด</option>
+                                <option value="custom">กำหนดเอง</option>
+                            </select>
+                        </label>
+                        <label class="field compact">
+                            <span>ตั้งแต่</span>
+                            <input id="historyFromDate" type="date">
+                        </label>
+                        <label class="field compact">
+                            <span>ถึง</span>
+                            <input id="historyToDate" type="date">
+                        </label>
+                        <label class="field compact">
+                            <span>ห้องเรียน</span>
+                            <select id="historyClassSelect"></select>
+                        </label>
+                        <label class="field compact">
+                            <span>นักเรียน</span>
+                            <select id="historyStudentSelect"></select>
+                        </label>
+                        <button class="button button-primary" type="submit">สร้างรายงาน</button>
                     </form>
+                    <p class="helper-text">เลือก “ทุกห้อง” เพื่อดูภาพรวมแยกห้อง หรือเลือกห้องและนักเรียนเพื่อดูรายละเอียดรายบุคคล</p>
                     <div id="historyList" class="history-list"></div>
                 </div>
             </section>
