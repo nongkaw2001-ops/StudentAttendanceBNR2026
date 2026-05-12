@@ -1,4 +1,417 @@
-const firebaseConfig = {
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อนักเรียน</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"], input[type="date"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        .student-list {
+            list-style: none;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #333;
+            min-width: 150px;
+        }
+
+        .status-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .status-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            min-width: 70px;
+        }
+
+        .status-btn.present {
+            background: #28a745;
+        }
+
+        .status-btn.absent {
+            background: #dc3545;
+        }
+
+        .status-btn.late {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .status-btn.inactive {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .delete-btn {
+            padding: 8px 12px;
+            background: #dc3545;
+            font-size: 14px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .summary-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .summary-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .summary-item.present .summary-number { color: #28a745; }
+        .summary-item.absent .summary-number { color: #dc3545; }
+        .summary-item.late .summary-number { color: #ffc107; }
+
+        .history-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .history-date {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .history-details {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .history-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.present { background: #28a745; }
+        .dot.absent { background: #dc3545; }
+        .dot.late { background: #ffc107; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .date-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .date-nav button {
+            padding: 10px 15px;
+        }
+
+        .current-date {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .student-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .status-buttons {
+                justify-content: center;
+            }
+
+            .tab {
+                flex: 1;
+                text-align: center;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 ระบบเช็คชื่อนักเรียน</h1>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showSection('attendance')">เช็คชื่อ</button>
+            <button class="tab" onclick="showSection('students')">จัดการนักเรียน</button>
+            <button class="tab" onclick="showSection('history')">ประวัติย้อนหลัง</button>
+        </div>
+
+        <!-- เช็คชื่อ -->
+        <div id="attendance" class="section active">
+            <div class="card">
+                <div class="date-nav">
+                    <button onclick="changeDate(-1)">◀</button>
+                    <span class="current-date" id="currentDate"></span>
+                    <button onclick="changeDate(1)">▶</button>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-number" id="totalCount">0</div>
+                        <div class="summary-label">ทั้งหมด</div>
+                    </div>
+                    <div class="summary-item present">
+                        <div class="summary-number" id="presentCount">0</div>
+                        <div class="summary-label">มา</div>
+                    </div>
+                    <div class="summary-item absent">
+                        <div class="summary-number" id="absentCount">0</div>
+                        <div class="summary-label">ไม่มา</div>
+                    </div>
+                    <div class="summary-item late">
+                        <div class="summary-number" id="lateCount">0</div>
+                        <div class="summary-label">สาย</div>
+                    </div>
+                </div>
+
+                <ul class="student-list" id="attendanceList">
+                    <li class="loading">
+                        <div class="spinner"></div>
+                        กำลังโหลด...
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- จัดการนักเรียน -->
+        <div id="students" class="section">
+            <div class="card">
+                <h2>เพิ่มนักเรียน</h2>
+                <div class="input-group">
+                    <input type="text" id="newStudentName" placeholder="ชื่อ-นามสกุล">
+                    <button onclick="addStudent()">+ เพิ่ม</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>รายชื่อนักเรียน (<span id="studentCount">0</span> คน)</h2>
+                <ul class="student-list" id="studentList">
+                    <li class="empty-state">ยังไม่มีนักเรียน</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ประวัติย้อนหลัง -->
+        <div id="history" class="section">
+            <div class="card">
+                <h2>เลือกวันที่</h2>
+                <div class="input-group">
+                    <input type="date" id="historyDate">
+                    <button onclick="loadHistory()">ดูประวัติ</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>ประวัติการเช็คชื่อ</h2>
+                <div id="historyList">
+                    <div class="empty-state">เลือกวันที่เพื่อดูประวัติ</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="[gstatic.com](https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js)"></script>
+    <script src="[gstatic.com](https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js)"></script>
+
+    <script>
+        // ========================================
+        const firebaseConfig = {
   apiKey: "AIzaSyD1d6hW-OE8A0cwhWLWUcxMAWMkv_jRp1U",
   authDomain: "studentattendance-bnr2026.firebaseapp.com",
   databaseURL: "https://studentattendance-bnr2026-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -8,3 +421,245 @@ const firebaseConfig = {
   appId: "1:214297274595:web:5574b38821640a472ffdd6",
   measurementId: "G-4QCBT51H3T"
 };
+        };
+        // ========================================
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // State
+        let students = {};
+        let currentDate = new Date();
+
+        // Format date
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function formatDateThai(date) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('th-TH', options);
+        }
+
+        // Show section
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+
+            if (sectionId === 'attendance') {
+                loadAttendance();
+            } else if (sectionId === 'students') {
+                loadStudents();
+            }
+        }
+
+        // Change date
+        function changeDate(days) {
+            currentDate.setDate(currentDate.getDate() + days);
+            loadAttendance();
+        }
+
+        // Load students
+        function loadStudents() {
+            db.ref('students').on('value', (snapshot) => {
+                students = snapshot.val() || {};
+                renderStudentList();
+            });
+        }
+
+        // Render student list
+        function renderStudentList() {
+            const list = document.getElementById('studentList');
+            const studentArray = Object.entries(students);
+            
+            document.getElementById('studentCount').textContent = studentArray.length;
+
+            if (studentArray.length === 0) {
+                list.innerHTML = '<li class="empty-state">ยังไม่มีนักเรียน</li>';
+                return;
+            }
+
+            list.innerHTML = studentArray
+                .sort((a, b) => a[1].name.localeCompare(b[1].name, 'th'))
+                .map(([id, student]) => `
+                    <li class="student-item">
+                        <span class="student-name">${student.name}</span>
+                        <button class="delete-btn" onclick="deleteStudent('${id}')">ลบ</button>
+                    </li>
+                `).join('');
+        }
+
+        // Add student
+        function addStudent() {
+            const input = document.getElementById('newStudentName');
+            const name = input.value.trim();
+
+            if (!name) {
+                alert('กรุณากรอกชื่อนักเรียน');
+                return;
+            }
+
+            db.ref('students').push({ name })
+                .then(() => {
+                    input.value = '';
+                })
+                .catch(err => alert('เกิดข้อผิดพลาด: ' + err.message));
+        }
+
+        // Delete student
+        function deleteStudent(id) {
+            if (confirm('ต้องการลบนักเรียนคนนี้?')) {
+                db.ref('students/' + id).remove()
+                    .catch(err => alert('เกิดข้อผิดพลาด: ' + err.message));
+            }
+        }
+
+        // Load attendance
+        function loadAttendance() {
+            const dateStr = formatDate(currentDate);
+            document.getElementById('currentDate').textContent = formatDateThai(currentDate);
+
+            // Load students first
+            db.ref('students').once('value', (studentSnap) => {
+                students = studentSnap.val() || {};
+
+                // Then load attendance for current date
+                db.ref('attendance/' + dateStr).on('value', (attSnap) => {
+                    const attendance = attSnap.val() || {};
+                    renderAttendanceList(attendance);
+                });
+            });
+        }
+
+        // Render attendance list
+        function renderAttendanceList(attendance) {
+            const list = document.getElementById('attendanceList');
+            const studentArray = Object.entries(students);
+
+            if (studentArray.length === 0) {
+                list.innerHTML = '<li class="empty-state">ยังไม่มีนักเรียน กรุณาเพิ่มนักเรียนก่อน</li>';
+                updateSummary({});
+                return;
+            }
+
+            list.innerHTML = studentArray
+                .sort((a, b) => a[1].name.localeCompare(b[1].name, 'th'))
+                .map(([id, student]) => {
+                    const status = attendance[id] || '';
+                    return `
+                        <li class="student-item">
+                            <span class="student-name">${student.name}</span>
+                            <div class="status-buttons">
+                                <button class="status-btn present ${status === 'present' ? '' : 'inactive'}" 
+                                    onclick="setAttendance('${id}', 'present')">มา</button>
+                                <button class="status-btn absent ${status === 'absent' ? '' : 'inactive'}" 
+                                    onclick="setAttendance('${id}', 'absent')">ไม่มา</button>
+                                <button class="status-btn late ${status === 'late' ? '' : 'inactive'}" 
+                                    onclick="setAttendance('${id}', 'late')">สาย</button>
+                            </div>
+                        </li>
+                    `;
+                }).join('');
+
+            updateSummary(attendance);
+        }
+
+        // Update summary
+        function updateSummary(attendance) {
+            const total = Object.keys(students).length;
+            let present = 0, absent = 0, late = 0;
+
+            Object.values(attendance).forEach(status => {
+                if (status === 'present') present++;
+                else if (status === 'absent') absent++;
+                else if (status === 'late') late++;
+            });
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('presentCount').textContent = present;
+            document.getElementById('absentCount').textContent = absent;
+            document.getElementById('lateCount').textContent = late;
+        }
+
+        // Set attendance
+        function setAttendance(studentId, status) {
+            const dateStr = formatDate(currentDate);
+            db.ref('attendance/' + dateStr + '/' + studentId).set(status)
+                .catch(err => alert('เกิดข้อผิดพลาด: ' + err.message));
+        }
+
+        // Load history
+        function loadHistory() {
+            const dateInput = document.getElementById('historyDate');
+            if (!dateInput.value) {
+                alert('กรุณาเลือกวันที่');
+                return;
+            }
+
+            const dateStr = dateInput.value;
+            const historyDiv = document.getElementById('historyList');
+
+            db.ref('attendance/' + dateStr).once('value', (snapshot) => {
+                const attendance = snapshot.val();
+
+                if (!attendance) {
+                    historyDiv.innerHTML = '<div class="empty-state">ไม่มีข้อมูลการเช็คชื่อในวันนี้</div>';
+                    return;
+                }
+
+                let present = 0, absent = 0, late = 0;
+                const details = [];
+
+                Object.entries(attendance).forEach(([studentId, status]) => {
+                    const student = students[studentId];
+                    if (student) {
+                        details.push({ name: student.name, status });
+                        if (status === 'present') present++;
+                        else if (status === 'absent') absent++;
+                        else if (status === 'late') late++;
+                    }
+                });
+
+                details.sort((a, b) => a.name.localeCompare(b.name, 'th'));
+
+                historyDiv.innerHTML = `
+                    <div class="history-item">
+                        <div class="history-date">${new Date(dateStr).toLocaleDateString('th-TH', { 
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                        })}</div>
+                        <div class="history-details">
+                            <div class="history-stat"><span class="dot present"></span> มา: ${present}</div>
+                            <div class="history-stat"><span class="dot absent"></span> ไม่มา: ${absent}</div>
+                            <div class="history-stat"><span class="dot late"></span> สาย: ${late}</div>
+                        </div>
+                    </div>
+                    ${details.map(d => `
+                        <div class="student-item">
+                            <span class="student-name">${d.name}</span>
+                            <span class="status-btn ${d.status}">${
+                                d.status === 'present' ? 'มา' : 
+                                d.status === 'absent' ? 'ไม่มา' : 'สาย'
+                            }</span>
+                        </div>
+                    `).join('')}
+                `;
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('historyDate').valueAsDate = new Date();
+            loadStudents();
+            loadAttendance();
+        });
+
+        // Handle Enter key
+        document.getElementById('newStudentName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addStudent();
+        });
+    </script>
+</body>
+</html>
