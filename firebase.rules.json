@@ -1,0 +1,36 @@
+{
+  "rules": {
+    "schools": {
+      "bnr2026": {
+        ".read": false,
+        ".write": false,
+        "users": {
+          "$uid": {
+            ".read": "auth != null && (auth.uid == $uid || root.child('schools/bnr2026/users/' + auth.uid + '/role').val() == 'admin')",
+            ".write": "auth != null && root.child('schools/bnr2026/users/' + auth.uid + '/role').val() == 'admin'",
+            ".validate": "newData.hasChildren(['role']) && newData.child('role').val().matches(/^(admin|teacher)$/)"
+          }
+        },
+        "classes": {
+          ".read": "auth != null",
+          "$classId": {
+            ".write": "auth != null && root.child('schools/bnr2026/users/' + auth.uid + '/role').val() == 'admin'",
+            "students": {
+              "$studentId": {
+                ".validate": "newData.hasChildren(['name', 'active']) || !newData.exists()"
+              }
+            },
+            "attendance": {
+              "$date": {
+                "$studentId": {
+                  ".write": "auth != null",
+                  ".validate": "newData.hasChildren(['status', 'updatedAt']) && newData.child('status').val().matches(/^(present|absent|late)$/)"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
