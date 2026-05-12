@@ -87,6 +87,17 @@ schools/bnr2026/classes/{classId}/attendance/{yyyy-mm-dd}/{studentId}
 
 ทำให้ขยายเป็นหลายห้องและหลายครูได้โดยยังใช้ Firebase project เดิม
 
+## Analytics
+
+หน้า `ประวัติย้อนหลัง` รองรับ:
+
+- เลือกช่วงเวลาแบบเดือนนี้, 7 วันล่าสุด, 30 วันล่าสุด หรือกำหนดเอง
+- ดูภาพรวมทุกห้องแบบแยกห้อง
+- เลือกห้องเพื่อดูตารางรายคนตามวัน
+- เลือกนักเรียนเพื่อดูรายละเอียดรายบุคคลในช่วงเวลาที่เลือก
+
+ระบบจำกัดการสร้างรายงานไม่เกิน 92 วันต่อครั้งเพื่อให้ใช้งานบนมือถือได้ลื่นและไม่อ่านข้อมูลจาก Firebase มากเกินไป
+
 ## Deploy บน GitHub Pages
 
 1. Push ไฟล์ทั้งหมดขึ้น GitHub
@@ -94,6 +105,65 @@ schools/bnr2026/classes/{classId}/attendance/{yyyy-mm-dd}/{studentId}
 3. Source เลือก `Deploy from a branch`
 4. Branch เลือก `main` และ folder เลือก `/root`
 5. รอ GitHub Pages deploy แล้วเปิด URL ที่ GitHub ให้มา
+
+## Deploy บน Firebase Hosting
+
+โปรเจกต์นี้ตั้งค่า Firebase Hosting ไว้แล้วใน `firebase.json` และ `.firebaserc`
+
+ครั้งแรกให้ login ก่อน:
+
+```bash
+firebase login
+```
+
+ตรวจ project:
+
+```bash
+firebase use
+```
+
+Deploy:
+
+```bash
+firebase deploy --only hosting
+```
+
+หลัง deploy จะได้ URL ประมาณนี้:
+
+```text
+https://studentattendance-bnr2026.web.app
+https://studentattendance-bnr2026.firebaseapp.com
+```
+
+หมายเหตุ: แอปนี้เป็น static web app ที่โหลด Firebase SDK ผ่าน CDN จึงไม่จำเป็นต้อง `npm install firebase` หรือมี build step เพิ่ม ถ้าจะเปลี่ยนเป็น npm module/bundler ค่อย migrate เป็น Vite ภายหลัง
+
+## Auto Deploy ด้วย GitHub Actions
+
+เพิ่ม workflow ไว้แล้ว:
+
+- `.github/workflows/firebase-hosting-merge.yml` deploy production เมื่อ push เข้า `main`
+- `.github/workflows/firebase-hosting-pull-request.yml` deploy preview URL เมื่อเปิด pull request
+
+ต้องเพิ่ม GitHub secret หนึ่งตัวก่อน workflow จะ deploy ได้:
+
+```text
+FIREBASE_SERVICE_ACCOUNT_STUDENTATTENDANCE_BNR2026
+```
+
+วิธีสร้าง secret:
+
+1. เข้า Firebase Console
+2. เลือก project `studentattendance-bnr2026`
+3. ไปที่ Project settings > Service accounts
+4. กด Generate new private key
+5. Copy JSON ทั้งก้อน
+6. ไป GitHub repo > Settings > Secrets and variables > Actions
+7. กด New repository secret
+8. Name ใส่ `FIREBASE_SERVICE_ACCOUNT_STUDENTATTENDANCE_BNR2026`
+9. Secret ใส่ JSON ที่ copy มา
+10. Save
+
+หลังจากนั้น push เข้า `main` จะ deploy ไป Firebase Hosting อัตโนมัติ
 
 ## หมายเหตุ
 

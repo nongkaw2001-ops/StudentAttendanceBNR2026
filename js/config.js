@@ -6,7 +6,7 @@ window.AppConfig = {
         projectId: "studentattendance-bnr2026",
         storageBucket: "studentattendance-bnr2026.firebasestorage.app",
         messagingSenderId: "214297274595",
-        appId: "1:214297274595:web:5574b38821640a472ffdd6",
-        measurementId: "G-4QCBT51H3T"
+        appId: "1:214297274595:web:fd64daef3d5768b22ffdd6",
+        measurementId: "G-QLDT28TDMM"
     }
 };
